@@ -8,7 +8,7 @@
     };
 
     nixpkgs = {
-      url = "nixpkgs/nixos-unstable";
+      url = "nixpkgs/nixos-21.11";
     };
 
   };
