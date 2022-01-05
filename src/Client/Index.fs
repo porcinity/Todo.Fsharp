@@ -73,6 +73,11 @@ let navBrand =
         ]
     ]
 
+let showStatus todo =
+    match todo.Status with
+    | Completed -> "Completed"
+    | Incomplete -> "Incomplete"
+
 let containerBox (model: Model) (dispatch: Msg -> unit) =
     Bulma.box [
         Bulma.content [
