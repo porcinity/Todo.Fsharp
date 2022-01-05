@@ -11,6 +11,8 @@ type Msg =
     | SetInput of string
     | AddTodo
     | AddedTodo of Todo
+    | UpdateStatus of Guid
+    | ClearTodos
 
 let todosApi =
     Remoting.createApi ()
