@@ -83,7 +83,19 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
         Bulma.content [
             Html.ol [
                 for todo in model.Todos do
-                    Html.li [ prop.text todo.Description ]
+                    Html.li[
+                        Bulma.field.div [
+                            field.isGrouped
+                            prop.children [
+                            Bulma.button.a [
+                                color.isInfo
+                                prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
+                                prop.text (showStatus todo)
+                            ]
+                            Html.p [ prop.text todo.Description ]
+                        ]
+                    ]
+                ]
             ]
         ]
         Bulma.field.div [
