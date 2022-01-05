@@ -14,7 +14,8 @@ module Todo =
 
     let create (description: string) =
         { Id = Guid.NewGuid()
-          Description = description }
+          Description = description
+          Status = Incomplete }
 
 module Route =
     let builder typeName methodName =
