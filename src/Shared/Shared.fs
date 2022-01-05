@@ -2,7 +2,11 @@ namespace Shared
 
 open System
 
-type Todo = { Id: Guid; Description: string }
+type TodoStatus =
+    | Incomplete
+    | Completed
+
+type Todo = { Id: Guid; Description: string; Status:TodoStatus }
 
 module Todo =
     let isValid (description: string) =
