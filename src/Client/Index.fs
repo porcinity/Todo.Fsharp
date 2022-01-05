@@ -119,6 +119,13 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
                         prop.text "Add"
                     ]
                 ]
+                Bulma.control.p [
+                    Bulma.button.a [
+                        color.isDanger
+                        prop.onClick (fun _ -> dispatch ClearTodos)
+                        prop.text "CLEAR"
+                    ]
+                ]
             ]
         ]
     ]
