@@ -1,5 +1,6 @@
 module Index
 
+open System
 open Elmish
 open Fable.Remoting.Client
 open Shared
