@@ -3,6 +3,7 @@ module Index
 open System
 open Elmish
 open Fable.Remoting.Client
+open Feliz.style
 open Shared
 
 type Model = { Todos: Todo list; Input: string }
@@ -81,50 +82,59 @@ let showStatus todo =
 
 let containerBox (model: Model) (dispatch: Msg -> unit) =
     Bulma.box [
-        Bulma.content [
+         Bulma.content [
             Html.ol [
                 for todo in model.Todos do
                     Html.li[
                         Bulma.field.div [
                             field.isGrouped
                             prop.children [
-                            Bulma.button.a [
-                                color.isInfo
-                                prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
-                                prop.text (showStatus todo)
-                            ]
-                            Html.p [ prop.text todo.Description ]
+                                Bulma.block [
+                                    Bulma.button.a [
+                                        color.isInfo
+                                        prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
+                                        prop.text (showStatus todo)
+
+                                    ]
+
+                                ]
+                                Bulma.button.a [
+                                    color.isWhite
+                                    prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
+                                    prop.text todo.Description
+                                ]
+
                         ]
                     ]
                 ]
             ]
-        ]
-        Bulma.field.div [
-            field.isGrouped
-            prop.children [
-                Bulma.control.p [
-                    control.isExpanded
-                    prop.children [
-                        Bulma.input.text [
-                            prop.value model.Input
-                            prop.placeholder "What needs to be done?"
-                            prop.onChange (fun x -> SetInput x |> dispatch)
+            Bulma.field.div [
+                field.isGrouped
+                prop.children [
+                    Bulma.control.p [
+                        control.isExpanded
+                        prop.children [
+                            Bulma.input.text [
+                                prop.value model.Input
+                                prop.placeholder "What needs to be done?"
+                                prop.onChange (fun x -> SetInput x |> dispatch)
+                            ]
                         ]
                     ]
-                ]
-                Bulma.control.p [
-                    Bulma.button.a [
-                        color.isPrimary
-                        prop.disabled (Todo.isValid model.Input |> not)
-                        prop.onClick (fun _ -> dispatch AddTodo)
-                        prop.text "Add"
+                    Bulma.control.p [
+                        Bulma.button.a [
+                            color.isPrimary
+                            prop.disabled (Todo.isValid model.Input |> not)
+                            prop.onClick (fun _ -> dispatch AddTodo)
+                            prop.text "Add"
+                        ]
                     ]
-                ]
-                Bulma.control.p [
-                    Bulma.button.a [
-                        color.isDanger
-                        prop.onClick (fun _ -> dispatch ClearTodos)
-                        prop.text "CLEAR"
+                    Bulma.control.p [
+                        Bulma.button.a [
+                            color.isDanger
+                            prop.onClick (fun _ -> dispatch ClearTodos)
+                            prop.text "CLEAR"
+                        ]
                     ]
                 ]
             ]
