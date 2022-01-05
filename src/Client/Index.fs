@@ -42,6 +42,19 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
         { model with
               Todos = model.Todos @ [ todo ] },
         Cmd.none
+    | ClearTodos -> { model with Todos = [] }, Cmd.none
+    | UpdateStatus id ->
+        let cycleStatus lst id =
+            lst
+            |> List.map (fun x ->
+                match x.Id = id with
+                | true ->
+                    match x.Status with
+                    | Incomplete -> { x with Status = Completed }
+                    | Completed -> { x with Status = Incomplete }
+                | false -> x)
+        let list = model.Todos
+        { model with Todos = cycleStatus list id}, Cmd.none
 
 open Feliz
 open Feliz.Bulma
