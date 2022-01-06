@@ -104,7 +104,9 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
                             prop.children [
                                 Bulma.block [
                                     Bulma.button.a [
-                                        color.isInfo
+                                        if todo.Status = Completed
+                                        then color.isSuccess
+                                        else color.isInfo
                                         prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
                                         prop.text (showStatus todo)
                                     ]
