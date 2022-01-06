@@ -12,7 +12,7 @@ type TodoBeingEdited = {
     Description: string
 }
 
-type Model = {
+type State = {
     Todos: Todo list
     Input: string
     TodoBeingEdited: TodoBeingEdited option
@@ -36,7 +36,7 @@ let todosApi =
     |> Remoting.withRouteBuilder Route.builder
     |> Remoting.buildProxy<ITodosApi>
 
-let init () : Model * Cmd<Msg> =
+let init () : State * Cmd<Msg> =
     let model = { Todos = []; Input = ""; TodoBeingEdited = None }
 
     let cmd =
@@ -62,37 +62,55 @@ let withoutTodo model todoId =
         |> List.filter (fun t -> t.Id <> todoId)
     { model with Todos = todos}, Cmd.none
 
-let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
+let update (msg: Msg) (state: State) : State * Cmd<Msg> =
     match msg with
-    | GotTodos todos -> { model with Todos = todos }, Cmd.none
-    | SetInput value -> { model with Input = value }, Cmd.none
+    | GotTodos todos -> { state with Todos = todos }, Cmd.none
+    | SetInput value -> { state with Input = value }, Cmd.none
     | AddTodo ->
-        let todo = Todo.create model.Input
+        let todo = Todo.create state.Input
 
         let cmd =
             Cmd.OfAsync.perform todosApi.addTodo todo AddedTodo
 
-        { model with Input = "" }, cmd
+        { state with Input = "" }, cmd
     | AddedTodo todo ->
-        { model with
-              Todos = model.Todos @ [ todo ] },
+        { state with
+              Todos = state.Todos @ [ todo ] },
         Cmd.none
-    | ClearTodos -> { model with Todos = [] }, Cmd.none
+    | ClearTodos -> { state with Todos = [] }, Cmd.none
     | UpdateStatus id ->
         id
-        |> withCycledTodo model
+        |> withCycledTodo state
 
     | DeleteTodo todoId ->
         todoId
-        |> withoutTodo model
+        |> withoutTodo state
     | StartEditingTodo todoId ->
         let nextEditModel =
-            model.Todos
+            state.Todos
             |> List.tryFind (fun todo -> todo.Id = todoId)
             |> Option.map (fun todo -> { Id = todoId; Description = todo.Description })
-        { model with TodoBeingEdited = nextEditModel }, Cmd.none
+        { state with TodoBeingEdited = nextEditModel }, Cmd.none
     | CancelEdit ->
-        { model with TodoBeingEdited = None }, Cmd.none
+        { state with TodoBeingEdited = None }, Cmd.none
+    | ApplyEdit ->
+        match state.TodoBeingEdited with
+        | None -> state, Cmd.none
+        | Some todoBeingEdited when todoBeingEdited.Description = "" -> state, Cmd.none
+        | Some todoBeingEdited ->
+            let nextTodoList =
+                state.Todos
+                |> List.map (fun todo ->
+                    if todo.Id = todoBeingEdited.Id
+                    then { todo with Description = todoBeingEdited.Description }
+                    else todo)
+            { state with Todos = nextTodoList; TodoBeingEdited = None }, Cmd.none
+    | SetEditedDescription newText ->
+        let nextEditModel =
+            state.TodoBeingEdited
+            |> Option.map (fun todoBeingEdited -> { todoBeingEdited with Description = newText })
+        { state with TodoBeingEdited = nextEditModel }, Cmd.none
+
 
 
 let navBrand =
@@ -114,7 +132,7 @@ let showStatus todo =
     | Completed -> "Completed"
     | Incomplete -> "Incomplete"
 
-let containerBox (model: Model) (dispatch: Msg -> unit) =
+let containerBox (model: State) (dispatch: Msg -> unit) =
     Bulma.box [
          Bulma.content [
             Html.ol [
@@ -177,7 +195,7 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
         ]
     ]
 
-let view (model: Model) (dispatch: Msg -> unit) =
+let view (model: State) (dispatch: Msg -> unit) =
     Bulma.hero [
         hero.isFullHeight
         color.isPrimary
