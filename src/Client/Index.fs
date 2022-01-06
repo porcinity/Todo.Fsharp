@@ -26,6 +26,7 @@ type Msg =
     | UpdateStatus of Guid
     | ClearTodos
     | DeleteTodo of Guid
+    | DeletedTodo of Todo list
     | CancelEdit
     | ApplyEdit
     | StartEditingTodo of Guid
@@ -57,10 +58,13 @@ let withCycledTodo model todoId =
     { model with Todos = cycledStatus}, Cmd.none
 
 let withoutTodo model todoId =
-    let todos =
+    let todo =
         model.Todos
-        |> List.filter (fun t -> t.Id <> todoId)
-    { model with Todos = todos}, Cmd.none
+        |> List.find (fun x -> x.Id = todoId)
+//    let todos =
+//        model.Todos
+//        |> List.filter (fun t -> t.Id <> todoId)
+    { model with Input = "" }, Cmd.OfAsync.perform todosApi.deleteTodo todo DeletedTodo
 
 let update (msg: Msg) (state: State) : State * Cmd<Msg> =
     match msg with
@@ -85,6 +89,9 @@ let update (msg: Msg) (state: State) : State * Cmd<Msg> =
     | DeleteTodo todoId ->
         todoId
         |> withoutTodo state
+    | DeletedTodo todoList ->
+//        let newState = state.Todos |> List.filter (fun x -> x.id <> 
+        { state with Todos = todoList }, Cmd.none
     | StartEditingTodo todoId ->
         let nextEditModel =
             state.Todos

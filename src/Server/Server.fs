@@ -17,6 +17,12 @@ type Storage() =
             Ok()
         else
             Error "Invalid todo"
+    member __.DeleteTodo(todo: Todo) =
+        let remove = todos.Find(fun t -> t.Id = todo.Id)
+        match todos.Remove(remove) with
+        | true -> Ok ()
+        | false -> Error "Not found"
+
 
 let storage = Storage()
 
@@ -37,7 +43,14 @@ let todosApi =
                   match storage.AddTodo todo with
                   | Ok () -> return todo
                   | Error e -> return failwith e
-              } }
+              }
+      deleteTodo =
+          fun todo ->
+              async {
+                  match storage.DeleteTodo todo with
+                  | Ok () -> return storage.GetTodos ()
+                  | Error e -> return failwith e
+              }}
 
 let webApp =
     Remoting.createApi ()
