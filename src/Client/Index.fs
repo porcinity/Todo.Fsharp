@@ -15,6 +15,7 @@ type Msg =
     | AddedTodo of Todo
     | UpdateStatus of Guid
     | ClearTodos
+    | DeleteTodo of Guid
 
 let todosApi =
     Remoting.createApi ()
@@ -58,8 +59,10 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
         let list = model.Todos
         { model with Todos = cycleStatus list id}, Cmd.none
 
-open Feliz
-open Feliz.Bulma
+    | DeleteTodo todoId ->
+        todoId
+        |> withoutTodo model
+
 
 let navBrand =
     Bulma.navbarBrand.div [
