@@ -48,7 +48,7 @@ let todosApi =
           fun todo ->
               async {
                   match storage.DeleteTodo todo with
-                  | Ok () -> return storage.GetTodos ()
+                  | Ok () -> return todo
                   | Error e -> return failwith e
               }}
 

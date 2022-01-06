@@ -26,7 +26,7 @@ type Msg =
     | UpdateStatus of Guid
     | ClearTodos
     | DeleteTodo of Guid
-    | DeletedTodo of Todo list
+    | DeletedTodo of Todo
     | CancelEdit
     | ApplyEdit
     | StartEditingTodo of Guid
@@ -61,9 +61,6 @@ let withoutTodo model todoId =
     let todo =
         model.Todos
         |> List.find (fun x -> x.Id = todoId)
-//    let todos =
-//        model.Todos
-//        |> List.filter (fun t -> t.Id <> todoId)
     { model with Input = "" }, Cmd.OfAsync.perform todosApi.deleteTodo todo DeletedTodo
 
 let update (msg: Msg) (state: State) : State * Cmd<Msg> =
@@ -89,9 +86,11 @@ let update (msg: Msg) (state: State) : State * Cmd<Msg> =
     | DeleteTodo todoId ->
         todoId
         |> withoutTodo state
-    | DeletedTodo todoList ->
-//        let newState = state.Todos |> List.filter (fun x -> x.id <> 
-        { state with Todos = todoList }, Cmd.none
+    | DeletedTodo todo ->
+        let todos =
+            state.Todos
+            |> List.filter (fun t -> t.Id <> todo.Id)
+        { state with Todos = todos }, Cmd.none
     | StartEditingTodo todoId ->
         let nextEditModel =
             state.Todos
@@ -208,7 +207,8 @@ let view (model: State) (dispatch: Msg -> unit) =
         color.isPrimary
         prop.style [
             style.backgroundSize "cover"
-            style.backgroundImageUrl "https://unsplash.it/1200/900?random"
+//            style.backgroundImageUrl "https://unsplash.it/1200/900?random"
+            style.backgroundColor.steelBlue
             style.backgroundPosition "no-repeat center center fixed"
         ]
         prop.children [
@@ -225,7 +225,8 @@ let view (model: State) (dispatch: Msg -> unit) =
                         prop.children [
                             Bulma.title [
                                 text.hasTextCentered
-                                prop.text "safe_test"
+                                prop.text "Todo List"
+
                             ]
                             containerBox model dispatch
                         ]
