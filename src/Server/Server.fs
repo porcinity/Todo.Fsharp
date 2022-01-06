@@ -22,6 +22,9 @@ type Storage() =
         match todos.Remove(remove) with
         | true -> Ok ()
         | false -> Error "Not found"
+    member __.DeleteTodos () =
+        todos.Clear()
+        todos
 
 
 let storage = Storage()
@@ -50,6 +53,12 @@ let todosApi =
                   match storage.DeleteTodo todo with
                   | Ok () -> return todo
                   | Error e -> return failwith e
+              }
+      deleteTodos =
+          fun () ->
+              async {
+                  storage.DeleteTodos () |> ignore
+                  return storage.GetTodos()
               }}
 
 let webApp =

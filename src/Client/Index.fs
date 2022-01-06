@@ -25,6 +25,7 @@ type Msg =
     | AddedTodo of Todo
     | UpdateStatus of Guid
     | ClearTodos
+    | ClearedTodos of Todo list
     | DeleteTodo of Guid
     | DeletedTodo of Todo
     | CancelEdit
@@ -78,7 +79,10 @@ let update (msg: Msg) (state: State) : State * Cmd<Msg> =
         { state with
               Todos = state.Todos @ [ todo ] },
         Cmd.none
-    | ClearTodos -> { state with Todos = [] }, Cmd.none
+    | ClearTodos ->
+        { state with Input = "" }, Cmd.OfAsync.perform todosApi.deleteTodos () ClearedTodos
+    | ClearedTodos list ->
+        { state with Todos = list }, Cmd.none
     | UpdateStatus id ->
         id
         |> withCycledTodo state
