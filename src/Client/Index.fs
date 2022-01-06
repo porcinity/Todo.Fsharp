@@ -112,7 +112,7 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
                                 ]
                                 Bulma.button.a [
                                     color.isWhite
-                                    prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
+                                    prop.onClick (fun _ -> dispatch <| DeleteTodo todo.Id)
                                     prop.text todo.Description
                                 ]
 
