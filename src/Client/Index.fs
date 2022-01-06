@@ -7,7 +7,16 @@ open Feliz
 open Feliz.Bulma
 open Shared
 
-type Model = { Todos: Todo list; Input: string }
+type TodoBeingEdited = {
+    Id: Guid
+    Description: string
+}
+
+type Model = {
+    Todos: Todo list
+    Input: string
+    TodoBeingEdited: TodoBeingEdited option
+}
 
 type Msg =
     | GotTodos of Todo list
