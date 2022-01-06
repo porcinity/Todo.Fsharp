@@ -4,6 +4,7 @@ open System
 open Elmish
 open Fable.Remoting.Client
 open Feliz
+open Feliz.Bulma
 open Shared
 
 type Model = { Todos: Todo list; Input: string }
@@ -30,6 +31,24 @@ let init () : Model * Cmd<Msg> =
 
     model, cmd
 
+let withCycledTodo model todoId =
+    let cycledStatus =
+            model.Todos
+            |> List.map (fun x ->
+                match x.Id = todoId with
+                | true ->
+                    match x.Status with
+                    | Incomplete -> { x with Status = Completed }
+                    | Completed -> { x with Status = Incomplete }
+                | false -> x)
+    { model with Todos = cycledStatus}, Cmd.none
+
+let withoutTodo model todoId =
+    let todos =
+        model.Todos
+        |> List.filter (fun t -> t.Id <> todoId)
+    { model with Todos = todos}, Cmd.none
+
 let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     match msg with
     | GotTodos todos -> { model with Todos = todos }, Cmd.none
@@ -47,17 +66,8 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
         Cmd.none
     | ClearTodos -> { model with Todos = [] }, Cmd.none
     | UpdateStatus id ->
-        let cycleStatus lst id =
-            lst
-            |> List.map (fun x ->
-                match x.Id = id with
-                | true ->
-                    match x.Status with
-                    | Incomplete -> { x with Status = Completed }
-                    | Completed -> { x with Status = Incomplete }
-                | false -> x)
-        let list = model.Todos
-        { model with Todos = cycleStatus list id}, Cmd.none
+        id
+        |> withCycledTodo model
 
     | DeleteTodo todoId ->
         todoId
