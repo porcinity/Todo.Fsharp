@@ -26,6 +26,10 @@ type Msg =
     | UpdateStatus of Guid
     | ClearTodos
     | DeleteTodo of Guid
+    | CancelEdit
+    | ApplyEdit
+    | StartEditingTodo of Guid
+    | SetEditedDescription of string
 
 let todosApi =
     Remoting.createApi ()
