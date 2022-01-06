@@ -3,7 +3,7 @@ module Index
 open System
 open Elmish
 open Fable.Remoting.Client
-open Feliz.style
+open Feliz
 open Shared
 
 type Model = { Todos: Todo list; Input: string }
@@ -94,7 +94,6 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
                                         color.isInfo
                                         prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
                                         prop.text (showStatus todo)
-
                                     ]
 
                                 ]
@@ -118,6 +117,7 @@ let containerBox (model: Model) (dispatch: Msg -> unit) =
                                 prop.value model.Input
                                 prop.placeholder "What needs to be done?"
                                 prop.onChange (fun x -> SetInput x |> dispatch)
+                                prop.onKeyUp (key.enter, fun _ -> dispatch AddTodo )
                             ]
                         ]
                     ]
