@@ -85,6 +85,14 @@ let update (msg: Msg) (model: Model) : Model * Cmd<Msg> =
     | DeleteTodo todoId ->
         todoId
         |> withoutTodo model
+    | StartEditingTodo todoId ->
+        let nextEditModel =
+            model.Todos
+            |> List.tryFind (fun todo -> todo.Id = todoId)
+            |> Option.map (fun todo -> { Id = todoId; Description = todo.Description })
+        { model with TodoBeingEdited = nextEditModel }, Cmd.none
+    | CancelEdit ->
+        { model with TodoBeingEdited = None }, Cmd.none
 
 
 let navBrand =
