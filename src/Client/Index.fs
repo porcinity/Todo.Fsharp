@@ -142,34 +142,93 @@ let showStatus todo =
     | Completed -> "Completed"
     | Incomplete -> "Incomplete"
 
+let div (classes: string list) (children: ReactElement list) =
+    Html.div [
+        prop.classes classes
+        prop.children children
+    ]
+
+let appTitle =
+    Html.p [
+      prop.className "title"
+      prop.text "Elmish To-Do List"
+    ]
+
+let inputField (state: State) (dispatch: Msg -> unit) =
+  div [ "field"; "has-addons" ] [
+    div [ "control"; "is-expanded" ] [
+      Html.input [
+        prop.classes [ "input"; "is-medium" ]
+        prop.valueOrDefault (state.Input = "")
+        prop.onTextChange (SetInput >> dispatch)
+      ]
+    ]
+
+    div [ "control" ] [
+      Html.button [
+        prop.classes [ "button"; "is-primary"; "is-medium" ]
+        prop.onClick (fun _ -> dispatch AddTodo)
+        prop.children [
+          Html.i [ prop.classes [ "fa"; "fa-plus" ] ]
+        ]
+      ]
+    ]
+  ]
+
+let renderTodo (todo: Todo) (dispatch: Msg -> unit) =
+  div [ "block" ] [
+    div [ "columns"; "is-vcentered"; "is-full"] [
+      div [ "column" ] [
+        Html.li [
+//          prop.className "subtitle"
+          prop.text todo.Description
+        ]
+      ]
+
+      div [ "column"; "is-narrow" ] [
+        div [ "buttons" ] [
+          Html.button [
+            if todo.Status = Incomplete
+            then prop.className [ "button"; "is-info"; "is-default" ]
+            else
+                prop.className [ "button"; "is-success" ]
+            prop.text (showStatus todo)
+            prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
+//            prop.children [
+//              Html.i [
+//                  prop.classes [ "fa"; "fa-check" ]
+//                  prop.value (showStatus 
+//              ]
+//            ]
+          ]
+          Html.button [
+            prop.classes [ "button"; "is-danger" ]
+            prop.onClick (fun _ -> dispatch (DeleteTodo todo.Id))
+            prop.text "Delete"
+//            prop.children [
+//              Html.i [ prop.classes [ "fa"; "fa-times" ] ]
+//            ]
+          ]
+        ]
+      ]
+    ]
+  ]
+
+let todoList (state: State) (dispatch: Msg -> unit) =
+  Html.ol [
+    prop.children [
+      for todo in state.Todos ->
+        Html.li [ renderTodo todo dispatch ]
+    ]
+  ]
+
+
 let containerBox (model: State) (dispatch: Msg -> unit) =
     Bulma.box [
          Bulma.content [
             Html.ol [
-                for todo in model.Todos do
-                    Html.li[
-                        Bulma.field.div [
-                            field.isGrouped
-                            prop.children [
-                                Bulma.block [
-                                    Bulma.button.a [
-                                        if todo.Status = Completed
-                                        then color.isSuccess
-                                        else color.isInfo
-                                        prop.onClick (fun _ -> dispatch <| UpdateStatus todo.Id)
-                                        prop.text (showStatus todo)
-                                    ]
-
-                                ]
-                                Bulma.button.a [
-                                    color.isWhite
-                                    prop.onClick (fun _ -> dispatch <| DeleteTodo todo.Id)
-                                    prop.text todo.Description
-                                ]
-
-                        ]
-                    ]
-                ]
+              for todo in model.Todos ->
+                  renderTodo todo dispatch
             ]
             Bulma.field.div [
                 field.isGrouped
@@ -193,13 +252,13 @@ let containerBox (model: State) (dispatch: Msg -> unit) =
                             prop.text "Add"
                         ]
                     ]
-                    Bulma.control.p [
-                        Bulma.button.a [
-                            color.isDanger
-                            prop.onClick (fun _ -> dispatch ClearTodos)
-                            prop.text "CLEAR"
-                        ]
-                    ]
+//                    Bulma.control.p [
+//                        Bulma.button.a [
+//                            color.isDanger
+//                            prop.onClick (fun _ -> dispatch ClearTodos)
+//                            prop.text "CLEAR"
+//                        ]
+//                    ]
                 ]
             ]
         ]
@@ -224,14 +283,14 @@ let view (model: State) (dispatch: Msg -> unit) =
             Bulma.heroBody [
                 Bulma.container [
                     Bulma.column [
-                        column.is6
-                        column.isOffset3
+                        column.is12
+//                        column.isOffset1
                         prop.children [
                             Bulma.title [
                                 text.hasTextCentered
                                 prop.text "Todo List"
-
                             ]
+//                            inputField model dispatch
                             containerBox model dispatch
                         ]
                     ]

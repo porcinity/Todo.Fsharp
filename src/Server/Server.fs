@@ -29,13 +29,13 @@ type Storage() =
 
 let storage = Storage()
 
-storage.AddTodo(Todo.create "Create new SAFE project")
+storage.AddTodo(Todo.create "Give Lucy booty scratches")
 |> ignore
 
-storage.AddTodo(Todo.create "Write your app")
+storage.AddTodo(Todo.create "Give Person booty scratches")
 |> ignore
 
-storage.AddTodo(Todo.create "Ship it !!!")
+storage.AddTodo(Todo.create "Tell Person she baby")
 |> ignore
 
 let todosApi =
