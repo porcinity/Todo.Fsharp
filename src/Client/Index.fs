@@ -32,6 +32,8 @@ type Msg =
     | ApplyEdit
     | StartEditingTodo of Guid
     | SetEditedDescription of string
+    | PreviewTodo of string
+    | Filter of string
 
 let todosApi =
     Remoting.createApi ()
@@ -120,6 +122,20 @@ let update (msg: Msg) (state: State) : State * Cmd<Msg> =
             state.TodoBeingEdited
             |> Option.map (fun todoBeingEdited -> { todoBeingEdited with Description = newText })
         { state with TodoBeingEdited = nextEditModel }, Cmd.none
+    | PreviewTodo string ->
+        let preview = Todo.create state.Input
+        if preview.Description = "" then
+            ""
+        else
+            preview.Description
+        let newlist = state.Todos @ [ preview ]
+        { state with Todos = newlist }, Cmd.none
+    | Filter query ->
+        let filtered =
+            state.Todos
+            |> List.filter (fun t -> t.Description.StartsWith(query))
+        { state with Todos = filtered }, Cmd.none
+
 
 
 
@@ -161,6 +177,7 @@ let inputField (state: State) (dispatch: Msg -> unit) =
         prop.classes [ "input"; "is-medium" ]
         prop.valueOrDefault (state.Input = "")
         prop.onTextChange (SetInput >> dispatch)
+        prop.onTextChange (fun x -> dispatch <| Filter x )
       ]
     ]
 
@@ -197,7 +214,7 @@ let renderTodo (todo: Todo) (dispatch: Msg -> unit) =
 //            prop.children [
 //              Html.i [
 //                  prop.classes [ "fa"; "fa-check" ]
-//                  prop.value (showStatus 
+//                  prop.value (showStatus atodo)
 //              ]
 //            ]
           ]
@@ -223,11 +240,11 @@ let todoList (state: State) (dispatch: Msg -> unit) =
   ]
 
 
-let containerBox (model: State) (dispatch: Msg -> unit) =
+let containerBox (state: State) (dispatch: Msg -> unit) =
     Bulma.box [
          Bulma.content [
             Html.ol [
-              for todo in model.Todos ->
+              for todo in state.Todos ->
                   renderTodo todo dispatch
             ]
             Bulma.field.div [
@@ -237,17 +254,22 @@ let containerBox (model: State) (dispatch: Msg -> unit) =
                         control.isExpanded
                         prop.children [
                             Bulma.input.text [
-                                prop.value model.Input
+                                prop.value state.Input
                                 prop.placeholder "What needs to be done?"
                                 prop.onChange (fun x -> SetInput x |> dispatch)
+//                                prop.onChange (fun x -> dispatch <| PreviewTodo x)
                                 prop.onKeyUp (key.enter, fun _ -> dispatch AddTodo )
                             ]
+                            if state.Input <> "" then
+                                Bulma.block [
+                                    prop.text $"Preview: {state.Input}"
+                                ]
                         ]
                     ]
                     Bulma.control.p [
                         Bulma.button.a [
                             color.isPrimary
-                            prop.disabled (Todo.isValid model.Input |> not)
+                            prop.disabled (Todo.isValid state.Input |> not)
                             prop.onClick (fun _ -> dispatch AddTodo)
                             prop.text "Add"
                         ]
@@ -261,6 +283,22 @@ let containerBox (model: State) (dispatch: Msg -> unit) =
 //                    ]
                 ]
             ]
+            Bulma.control.p [
+                prop.children [
+                     Bulma.input.text [
+                        prop.value state.Input
+                        prop.placeholder "Filter todos"
+                        prop.onChange (fun x -> SetInput x |> dispatch)
+            //                prop.onChange (fun x -> dispatch <| PreviewTodo x)
+//                        prop.onChange (fun x -> dispatch <| Filter x )
+                    ]
+                ]
+            ]
+
+//            if state.Input <> "" then
+//                Bulma.block [
+//                    prop.text $"Preview: {state.Input}"
+//                ]
         ]
     ]
 
@@ -288,10 +326,10 @@ let view (model: State) (dispatch: Msg -> unit) =
                         prop.children [
                             Bulma.title [
                                 text.hasTextCentered
-                                prop.text "Todo List"
+                                prop.text "Todo List (itb)"
                             ]
-//                            inputField model dispatch
                             containerBox model dispatch
+//                            inputField model dispatch
                         ]
                     ]
                 ]
