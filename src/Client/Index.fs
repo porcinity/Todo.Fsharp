@@ -214,7 +214,6 @@ let renderTodo (todo: Todo) (dispatch: Msg -> unit) =
 //            prop.children [
 //              Html.i [
 //                  prop.classes [ "fa"; "fa-check" ]
-//                  prop.value (showStatus atodo)
 //              ]
 //            ]
           ]
