@@ -144,8 +144,13 @@ let update (msg: Msg) (state: State) : State * Cmd<Msg> =
     | UpdatedStatus todo ->
         let newList =
             state.Todos
-            |> List.filter (fun x -> x.Id <> todo.Id)
-            |> List.append [ todo ]
+            |> List.map (fun x ->
+                if x.Id = todo.Id
+                then
+                    match x.Status with
+                    | Incomplete -> { x with Status = Completed }
+                    | Completed -> { x with Status = Incomplete }
+                else x)
         { state with Todos = newList }, Cmd.none
 
 

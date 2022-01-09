@@ -42,25 +42,21 @@ type Storage() =
         else
             Error "Invalid todo"
     member __.UpdateStatus(todo: Todo) =
-        let remove = todos.Find(fun t -> t.Id = todo.Id)
-        let update = { remove with Status = Completed }
-        match todos.Remove remove with
-        | true ->
-            todos.Add update
-            Ok ()
-        | false -> Error "Invalid request"
-        let (newTodos: Todo list) =
-            todos
-            |> List.ofSeq
-            |> List.map (fun x ->
-                match x.Id = todo.Id with
-                | true ->
-                    match x.Status with
-                    | Incomplete -> { x with Status = Completed }
-                    | Completed -> { x with Status = Incomplete }
-                | false -> x)
-        let todos = newTodos
-        Ok ()
+        let dto = TodoDto.fromTodo todo
+        let flipStatus (todo: TodoDto) =
+            match todo.Status with
+            | "Completed" -> "Incomplete"
+            | "Incomplete" -> "Completed"
+
+        let res =
+            conn
+            |> Sql.connect
+            |> Sql.query "update todos set status = @status where id = @id"
+            |> Sql.parameters [ "status", Sql.text (flipStatus dto) ;"id", Sql.uuid todo.Id ]
+            |> Sql.executeNonQuery
+        match res with
+        | 1 -> Ok ()
+        | _ -> Error "Invalid request"
     member __.DeleteTodo(todo: Todo) =
         let del =
             conn
