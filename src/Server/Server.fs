@@ -29,25 +29,28 @@ type Storage() =
     }
 
 
-    member __.AddTodo(todo: Todo, connStr: string) =
-        if Todo.isValid todo.Description then
-            let dto = TodoDto.fromTodo todo
-            connStr
-            |> Sql.connect
-            |> Sql.query "INSERT INTO todos (id, description, status) VALUES (@id, @desc, @status)"
-            |> Sql.parameters [ "@id", Sql.uuid dto.Id; "@desc", Sql.text dto.Description; "@status", Sql.text dto.Status ]
-            |> Sql.executeNonQuery
-            |> ignore
-            Ok()
-        else
-            Error "Invalid todo"
+    member __.AddTodo(todo: Todo, connStr: string) = async {
+        let res =
+            if Todo.isValid todo.Description
+            then
+                let dto = TodoDto.fromTodo todo
+                connStr
+                |> Sql.connect
+                |> Sql.query "INSERT INTO todos (id, description, status) VALUES (@id, @desc, @status)"
+                |> Sql.parameters [ "@id", Sql.uuid dto.Id; "@desc", Sql.text dto.Description; "@status", Sql.text dto.Status ]
+                |> Sql.executeNonQueryAsync |> ignore
+                Ok ()
+            else Error "eep"
+        return res
+    }
+
+
     member __.UpdateStatus(todo: Todo) =
         let dto = TodoDto.fromTodo todo
         let flipStatus (todo: TodoDto) =
             match todo.Status with
             | "Completed" -> "Incomplete"
             | "Incomplete" -> "Completed"
-
         let res =
             conn
             |> Sql.connect
@@ -86,7 +89,8 @@ let todosApi =
       addTodo =
           fun todo ->
               async {
-                  match storage.AddTodo (todo, conn) with
+                  let! res = storage.AddTodo (todo, conn)
+                  match res with
                   | Ok () -> return todo
                   | Error e -> return failwith e
               }
