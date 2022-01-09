@@ -37,6 +37,7 @@ type Storage() =
             |> Sql.query "INSERT INTO todos (id, description, status) VALUES (@id, @desc, @status)"
             |> Sql.parameters [ "@id", Sql.uuid dto.Id; "@desc", Sql.text dto.Description; "@status", Sql.text dto.Status ]
             |> Sql.executeNonQuery
+            |> ignore
             Ok()
         else
             Error "Invalid todo"
@@ -61,10 +62,16 @@ type Storage() =
         let todos = newTodos
         Ok ()
     member __.DeleteTodo(todo: Todo) =
-        let remove = todos.Find(fun t -> t.Id = todo.Id)
-        match todos.Remove(remove) with
-        | true -> Ok ()
-        | false -> Error "Not found"
+        let del =
+            conn
+            |> Sql.connect
+            |> Sql.query "delete from todos where id = @id"
+            |> Sql.parameters [ "id", Sql.uuid todo.Id ]
+            |> Sql.executeNonQuery
+        match del with
+        | 1 -> Ok ()
+        | _ -> Error "Not found"
+
     member __.DeleteTodos () =
         todos.Clear()
         todos
