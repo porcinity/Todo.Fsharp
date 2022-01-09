@@ -45,7 +45,7 @@ type Storage() =
     }
 
 
-    member __.UpdateStatus(todo: Todo) =
+    member __.UpdateStatus(todo: Todo) = async {
         let dto = TodoDto.fromTodo todo
         let flipStatus (todo: TodoDto) =
             match todo.Status with
@@ -56,10 +56,13 @@ type Storage() =
             |> Sql.connect
             |> Sql.query "update todos set status = @status where id = @id"
             |> Sql.parameters [ "status", Sql.text (flipStatus dto) ;"id", Sql.uuid todo.Id ]
-            |> Sql.executeNonQuery
-        match res with
-        | 1 -> Ok ()
-        | _ -> Error "Invalid request"
+            |> Sql.executeNonQueryAsync
+        let! res' = res |> Async.AwaitTask
+        match res' with
+        | 1 -> return Ok ()
+        | _ -> return Error "Invalid request"
+    }
+
     member __.DeleteTodo(todo: Todo) =
         let del =
             conn
@@ -97,7 +100,8 @@ let todosApi =
       updateStatus =
           fun todo ->
               async {
-                  match storage.UpdateStatus todo with
+                  let! res = storage.UpdateStatus todo
+                  match res with
                   | Ok () -> return todo
                   | Error e -> return failwith e
               }
