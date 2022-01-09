@@ -14,7 +14,7 @@ type Storage() =
     let (todos: Todo ResizeArray) = ResizeArray<_>()
 
     member __.GetTodos(connStr: string) = async {
-        let res' =
+        let! res =
             connStr
             |> Sql.connect
             |> Sql.query "SELECT * FROM todos"
@@ -24,8 +24,8 @@ type Storage() =
                     Description = read.string "description"
                     Status = read.string "status"
                 })
-        let! th = res'|> Async.AwaitTask
-        return th
+            |> Async.AwaitTask
+        return res
     }
 
 
@@ -51,28 +51,31 @@ type Storage() =
             match todo.Status with
             | "Completed" -> "Incomplete"
             | "Incomplete" -> "Completed"
-        let res =
+        let! res =
             conn
             |> Sql.connect
             |> Sql.query "update todos set status = @status where id = @id"
             |> Sql.parameters [ "status", Sql.text (flipStatus dto) ;"id", Sql.uuid todo.Id ]
             |> Sql.executeNonQueryAsync
-        let! res' = res |> Async.AwaitTask
-        match res' with
+            |> Async.AwaitTask
+        match res with
         | 1 -> return Ok ()
         | _ -> return Error "Invalid request"
     }
 
-    member __.DeleteTodo(todo: Todo) =
-        let del =
+    member __.DeleteTodo(todo: Todo) = async {
+        let! del =
             conn
             |> Sql.connect
             |> Sql.query "delete from todos where id = @id"
             |> Sql.parameters [ "id", Sql.uuid todo.Id ]
-            |> Sql.executeNonQuery
+            |> Sql.executeNonQueryAsync
+            |> Async.AwaitTask
         match del with
-        | 1 -> Ok ()
-        | _ -> Error "Not found"
+        | 1 -> return Ok ()
+        | _ -> return Error "Not found"
+    }
+
 
     member __.DeleteTodos () =
         todos.Clear()
@@ -108,7 +111,8 @@ let todosApi =
       deleteTodo =
           fun todo ->
               async {
-                  match storage.DeleteTodo todo with
+                  let! res = storage.DeleteTodo todo
+                  match res with
                   | Ok () -> return todo
                   | Error e -> return failwith e
               }
