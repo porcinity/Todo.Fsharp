@@ -1,22 +1,65 @@
 module Server
 
+open CommonExtensionsAndTypesForNpgsqlFSharp
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
+open Npgsql.FSharp
 open Saturn
 
 open Shared
 
+let conn = "Host=localhost;Database=todos;Username=anthony;Password=itb"
+
 type Storage() =
-    let todos = ResizeArray<_>()
+    let (todos: Todo ResizeArray) = ResizeArray<_>()
 
-    member __.GetTodos() = List.ofSeq todos
+    member __.GetTodos(connStr: string) = async {
+        let res' =
+            connStr
+            |> Sql.connect
+            |> Sql.query "SELECT * FROM todos"
+            |> Sql.executeAsync (fun read ->
+                {
+                    Id = read.uuid "id"
+                    Description = read.string "description"
+                    Status = read.string "status"
+                })
+        let! th = res'|> Async.AwaitTask
+        return th
+    }
 
-    member __.AddTodo(todo: Todo) =
+
+    member __.AddTodo(todo: Todo, connStr: string) =
         if Todo.isValid todo.Description then
-            todos.Add todo
+            let dto = TodoDto.fromTodo todo
+            connStr
+            |> Sql.connect
+            |> Sql.query "INSERT INTO todos (id, description, status) VALUES (@id, @desc, @status)"
+            |> Sql.parameters [ "@id", Sql.uuid dto.Id; "@desc", Sql.text dto.Description; "@status", Sql.text dto.Status ]
+            |> Sql.executeNonQuery
             Ok()
         else
             Error "Invalid todo"
+    member __.UpdateStatus(todo: Todo) =
+        let remove = todos.Find(fun t -> t.Id = todo.Id)
+        let update = { remove with Status = Completed }
+        match todos.Remove remove with
+        | true ->
+            todos.Add update
+            Ok ()
+        | false -> Error "Invalid request"
+        let (newTodos: Todo list) =
+            todos
+            |> List.ofSeq
+            |> List.map (fun x ->
+                match x.Id = todo.Id with
+                | true ->
+                    match x.Status with
+                    | Incomplete -> { x with Status = Completed }
+                    | Completed -> { x with Status = Incomplete }
+                | false -> x)
+        let todos = newTodos
+        Ok ()
     member __.DeleteTodo(todo: Todo) =
         let remove = todos.Find(fun t -> t.Id = todo.Id)
         match todos.Remove(remove) with
@@ -29,21 +72,25 @@ type Storage() =
 
 let storage = Storage()
 
-storage.AddTodo(Todo.create "Give Lucy booty scratches")
-|> ignore
-
-storage.AddTodo(Todo.create "Give Person booty scratches")
-|> ignore
-
-storage.AddTodo(Todo.create "Tell Person she baby")
-|> ignore
-
 let todosApi =
-    { getTodos = fun () -> async { return storage.GetTodos() }
+    { getTodos = fun () -> async {
+            let! stuff = storage.GetTodos(conn)
+            let newstuff =
+                stuff
+                |> List.map (fun t -> TodoDto.ofTodo t)
+            return newstuff
+        }
       addTodo =
           fun todo ->
               async {
-                  match storage.AddTodo todo with
+                  match storage.AddTodo (todo, conn) with
+                  | Ok () -> return todo
+                  | Error e -> return failwith e
+              }
+      updateStatus =
+          fun todo ->
+              async {
+                  match storage.UpdateStatus todo with
                   | Ok () -> return todo
                   | Error e -> return failwith e
               }
@@ -58,7 +105,11 @@ let todosApi =
           fun () ->
               async {
                   storage.DeleteTodos () |> ignore
-                  return storage.GetTodos()
+                  let! stuff = storage.GetTodos(conn)
+                  let newstuff =
+                      stuff
+                      |> List.map (fun t -> TodoDto.ofTodo t)
+                  return newstuff
               }}
 
 let webApp =

@@ -24,6 +24,7 @@ type Msg =
     | AddTodo
     | AddedTodo of Todo
     | UpdateStatus of Guid
+    | UpdatedStatus of Todo
     | ClearTodos
     | ClearedTodos of Todo list
     | DeleteTodo of Guid
@@ -66,6 +67,12 @@ let withoutTodo model todoId =
         |> List.find (fun x -> x.Id = todoId)
     { model with Input = "" }, Cmd.OfAsync.perform todosApi.deleteTodo todo DeletedTodo
 
+let withUpdatedStatus model (todoId: Guid) =
+    let todo =
+        model.Todos
+        |> List.find (fun x -> x.Id = todoId)
+    model, Cmd.OfAsync.perform todosApi.updateStatus todo UpdatedStatus
+
 let update (msg: Msg) (state: State) : State * Cmd<Msg> =
     match msg with
     | GotTodos todos -> { state with Todos = todos }, Cmd.none
@@ -85,10 +92,6 @@ let update (msg: Msg) (state: State) : State * Cmd<Msg> =
         { state with Input = "" }, Cmd.OfAsync.perform todosApi.deleteTodos () ClearedTodos
     | ClearedTodos list ->
         { state with Todos = list }, Cmd.none
-    | UpdateStatus id ->
-        id
-        |> withCycledTodo state
-
     | DeleteTodo todoId ->
         todoId
         |> withoutTodo state
@@ -135,6 +138,16 @@ let update (msg: Msg) (state: State) : State * Cmd<Msg> =
             state.Todos
             |> List.filter (fun t -> t.Description.StartsWith(query))
         { state with Todos = filtered }, Cmd.none
+    | UpdateStatus todoId ->
+        todoId
+        |> withUpdatedStatus state
+    | UpdatedStatus todo ->
+        let newList =
+            state.Todos
+            |> List.filter (fun x -> x.Id <> todo.Id)
+            |> List.append [ todo ]
+        { state with Todos = newList }, Cmd.none
+
 
 
 
@@ -153,7 +166,7 @@ let navBrand =
         ]
     ]
 
-let showStatus todo =
+let showStatus (todo: Todo) =
     match todo.Status with
     | Completed -> "Completed"
     | Incomplete -> "Incomplete"
@@ -217,6 +230,7 @@ let renderTodo (todo: Todo) (dispatch: Msg -> unit) =
 //              ]
 //            ]
           ]
+
           Html.button [
             prop.classes [ "button"; "is-danger" ]
             prop.onClick (fun _ -> dispatch (DeleteTodo todo.Id))
