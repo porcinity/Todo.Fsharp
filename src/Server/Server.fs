@@ -8,7 +8,7 @@ open Saturn
 
 open Shared
 
-let conn = "Host=localhost;Database=todos;Username=anthony;Password=itb"
+let conn = "Host=localhost;Database=todos;Username=pigg"
 
 type Storage() =
     let (todos: Todo ResizeArray) = ResizeArray<_>()
