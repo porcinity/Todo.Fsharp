@@ -80,11 +80,11 @@ let storage = Storage()
 
 let todosApi =
     { getTodos = fun () -> async {
-            let! stuff = storage.GetTodos(conn)
-            let newstuff =
-                stuff
-                |> List.map (fun t -> TodoDto.ofTodo t)
-            return newstuff
+            let! todos = storage.GetTodos(conn)
+            let todoDtos =
+                todos
+                |> List.map TodoDto.ofTodo
+            return todoDtos
         }
       addTodo =
           fun todo ->
