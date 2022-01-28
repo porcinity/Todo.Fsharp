@@ -25,8 +25,6 @@ type Msg =
     | AddedTodo of Todo
     | UpdateStatus of Guid
     | UpdatedStatus of Todo
-    | ClearTodos
-    | ClearedTodos of Todo list
     | DeleteTodo of Guid
     | DeletedTodo of Todo
     | CancelEdit
