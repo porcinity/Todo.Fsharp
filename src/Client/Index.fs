@@ -86,10 +86,6 @@ let update (msg: Msg) (state: State) : State * Cmd<Msg> =
         { state with
               Todos = state.Todos @ [ todo ] },
         Cmd.none
-    | ClearTodos ->
-        { state with Input = "" }, Cmd.OfAsync.perform todosApi.deleteTodos () ClearedTodos
-    | ClearedTodos list ->
-        { state with Todos = list }, Cmd.none
     | DeleteTodo todoId ->
         todoId
         |> withoutTodo state
