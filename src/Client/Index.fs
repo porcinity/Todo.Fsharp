@@ -313,7 +313,6 @@ let view (model: State) (dispatch: Msg -> unit) =
         color.isPrimary
         prop.style [
             style.backgroundSize "cover"
-//            style.backgroundImageUrl "https://unsplash.it/1200/900?random"
             style.backgroundColor.steelBlue
             style.backgroundPosition "no-repeat center center fixed"
         ]
@@ -331,7 +330,7 @@ let view (model: State) (dispatch: Msg -> unit) =
                         prop.children [
                             Bulma.title [
                                 text.hasTextCentered
-                                prop.text "Todo List (itb)"
+                                prop.text "F# Todo List"
                             ]
                             containerBox model dispatch
 //                            inputField model dispatch
