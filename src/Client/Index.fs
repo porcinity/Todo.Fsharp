@@ -286,31 +286,24 @@ let containerBox (state: State) (dispatch: Msg -> unit) =
                             prop.text "Add"
                         ]
                     ]
-//                    Bulma.control.p [
-//                        Bulma.button.a [
-//                            color.isDanger
-//                            prop.onClick (fun _ -> dispatch ClearTodos)
-//                            prop.text "CLEAR"
-//                        ]
-//                    ]
                 ]
             ]
-            Bulma.control.p [
-                prop.children [
-                     Bulma.input.text [
-                        prop.value state.Input
-                        prop.placeholder "Filter todos"
-                        prop.onChange (fun x -> SetInput x |> dispatch)
-            //                prop.onChange (fun x -> dispatch <| PreviewTodo x)
+//            Bulma.control.p [
+//                prop.children [
+//                     Bulma.input.text [
+//                        prop.value state.Input
+//                        prop.placeholder "Filter todos"
+//                        prop.onChange (fun x -> SetInput x |> dispatch)
+//                        prop.onChange (fun x -> dispatch <| PreviewTodo x)
 //                        prop.onChange (fun x -> dispatch <| Filter x )
-                    ]
-                ]
-            ]
-
-//            if state.Input <> "" then
-//                Bulma.block [
-//                    prop.text $"Preview: {state.Input}"
+//                    ]
 //                ]
+//            ]
+//
+////            if state.Input <> "" then
+////                Bulma.block [
+////                    prop.text $"Preview: {state.Input}"
+////                ]
         ]
     ]
 
