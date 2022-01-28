@@ -11,7 +11,6 @@ open Shared
 let conn = "Host=localhost;Database=todos;Username=pigg"
 
 type Storage() =
-    let (todos: Todo ResizeArray) = ResizeArray<_>()
 
     member __.GetTodos(connStr: string) = async {
         let! res =
