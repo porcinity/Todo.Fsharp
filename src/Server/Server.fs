@@ -76,11 +76,6 @@ type Storage() =
     }
 
 
-    member __.DeleteTodos () =
-        todos.Clear()
-        todos
-
-
 let storage = Storage()
 
 let todosApi =
