@@ -1,5 +1,5 @@
 {
-  description = "Initial Flake file";
+  description = "Todo.Fsharp";
 
   inputs = {
 
@@ -22,7 +22,6 @@
           buildInputs = with pkgs; [
             nodejs
             (with dotnetCorePackages; combinePackages [
-              dotnet-sdk_6
               dotnet-sdk_5
               dotnetPackages.Nuget
             ])
