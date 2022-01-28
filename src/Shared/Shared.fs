@@ -26,8 +26,7 @@ type ITodosApi =
     { getTodos: unit -> Async<Todo list>
       addTodo: Todo -> Async<Todo>
       updateStatus: Todo -> Async<Todo>
-      deleteTodo: Todo -> Async<Todo>
-      deleteTodos: unit -> Async<Todo list> }
+      deleteTodo: Todo -> Async<Todo> }
 
 type TodoDto = { Id: Guid; Description: string; Status: string }
 
