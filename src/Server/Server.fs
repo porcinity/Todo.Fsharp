@@ -106,16 +106,6 @@ let todosApi =
                   match! storage.DeleteTodo todo with
                   | Ok () -> return todo
                   | Error e -> return failwith e
-              }
-      deleteTodos =
-          fun () ->
-              async {
-                  storage.DeleteTodos () |> ignore
-                  let! stuff = storage.GetTodos(conn)
-                  let newstuff =
-                      stuff
-                      |> List.map (fun t -> TodoDto.ofTodo t)
-                  return newstuff
               }}
 
 let webApp =
