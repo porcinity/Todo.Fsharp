@@ -89,24 +89,21 @@ let todosApi =
       addTodo =
           fun todo ->
               async {
-                  let! res = storage.AddTodo (todo, conn)
-                  match res with
+                  match! storage.AddTodo (todo, conn) with
                   | Ok () -> return todo
                   | Error e -> return failwith e
               }
       updateStatus =
           fun todo ->
               async {
-                  let! res = storage.UpdateStatus todo
-                  match res with
+                  match! storage.UpdateStatus todo with
                   | Ok () -> return todo
                   | Error e -> return failwith e
               }
       deleteTodo =
           fun todo ->
               async {
-                  let! res = storage.DeleteTodo todo
-                  match res with
+                  match! storage.DeleteTodo todo with
                   | Ok () -> return todo
                   | Error e -> return failwith e
               }
